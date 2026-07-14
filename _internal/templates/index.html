@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bili 抽奖姬 - 直播互动抽奖系统</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0616;
+            --bg-secondary: #120d24;
+            --bg-tertiary: #1b1435;
+            --accent-gradient: linear-gradient(135deg, #bf5af2 0%, #0a84ff 100%);
+            --accent-color: #bf5af2;
+            --accent-glow: rgba(191, 90, 242, 0.35);
+            --success: #30d158;
+            --success-glow: rgba(48, 209, 88, 0.35);
+            --danger: #ff453a;
+            --danger-glow: rgba(255, 69, 58, 0.35);
+            --warning: #ff9f0a;
+            --text-main: #f5f5f7;
+            --text-muted: #8e8e93;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --card-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 40px 50px;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1300px;
+            width: 100%;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo svg {
+            width: 42px;
+            height: 42px;
+            filter: drop-shadow(0 0 8px var(--accent-color));
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 0.5px;
+        }
+
+        .back-link {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateX(-2px);
+        }
+
+        /* Responsive Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glassmorphic Cards */
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title svg {
+            width: 22px;
+            height: 22px;
+            color: var(--accent-color);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-main);
+            font-size: 0.92rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Toggle Checkbox */
+        .checkbox-container {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-container input {
+            display: none;
+        }
+
+        .checkbox-custom {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            background-color: var(--bg-tertiary);
+            display: inline-block;
+            position: relative;
+        }
+
+        .checkbox-container input:checked+.checkbox-custom {
+            background: var(--accent-gradient);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 6px var(--accent-glow);
+        }
+
+        .checkbox-container input:checked+.checkbox-custom::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2.5px 2.5px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkbox-label {
+            font-size: 0.92rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.stopped {
+            background-color: rgba(255, 69, 58, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(255, 69, 58, 0.2);
+        }
+
+        .status-badge.running {
+            background-color: rgba(48, 209, 88, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(48, 209, 88, 0.2);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-badge.running .status-dot {
+            background-color: var(--success);
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .status-badge.stopped .status-dot {
+            background-color: var(--danger);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.9);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(1.2);
+                opacity: 1;
+                box-shadow: 0 0 8px var(--success);
+            }
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            border: none;
+            color: white;
+            transition: all 0.2s ease;
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            box-shadow: 0 4px 15px -3px var(--accent-glow);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -2px var(--accent-glow);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #30d158 0%, #1c9e3c 100%);
+            box-shadow: 0 4px 15px -3px var(--success-glow);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -2px var(--success-glow);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff453a 0%, #d82e24 100%);
+            box-shadow: 0 4px 15px -3px var(--danger-glow);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px -2px var(--danger-glow);
+        }
+
+        .btn-secondary {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Real-time Logs Terminal */
+        .terminal-box {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            height: 180px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 12px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: #d1d5db;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-line {
+            word-break: break-all;
+            white-space: pre-wrap;
+        }
+
+        /* Entrants Table */
+        .entrants-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .entrants-count {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: rgba(191, 90, 242, 0.1);
+            color: var(--accent-color);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .entries-table-wrapper {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-tertiary);
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.01);
+        }
+
+        .user-cell {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            object-fit: cover;
+        }
+
+        .badge-type {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-dm {
+            background-color: rgba(10, 132, 255, 0.1);
+            color: #0a84ff;
+            border: 1px solid rgba(10, 132, 255, 0.2);
+        }
+
+        .badge-gift {
+            background-color: rgba(255, 159, 10, 0.1);
+            color: #ff9f0a;
+            border: 1px solid rgba(255, 159, 10, 0.2);
+        }
+
+        .badge-manual {
+            background-color: rgba(191, 90, 242, 0.1);
+            color: #bf5af2;
+            border: 1px solid rgba(191, 90, 242, 0.2);
+        }
+
+        .delete-cell-btn {
+            background-color: transparent;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+            transition: all 0.2s;
+        }
+
+        .delete-cell-btn:hover {
+            opacity: 1;
+            background-color: rgba(255, 69, 58, 0.1);
+        }
+
+        /* Draw Board Machine */
+        .draw-board {
+            background: radial-gradient(circle at center, #24143a 0%, #120921 100%);
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 25px rgba(191, 90, 242, 0.25);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .draw-gimmick {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 15px var(--accent-glow);
+            height: 60px;
+            line-height: 60px;
+            overflow: hidden;
+            letter-spacing: 1px;
+            margin: 20px 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .draw-winner-name {
+            animation: bounceIn 0.5s ease-out;
+            color: #30d158;
+            text-shadow: 0 0 20px var(--success-glow);
+        }
+
+        @keyframes bounceIn {
+            0% {
+                transform: scale(0.3);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            70% {
+                transform: scale(0.9);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Winners Board */
+        .winners-box {
+            background-color: rgba(48, 209, 88, 0.05);
+            border: 1px dashed rgba(48, 209, 88, 0.3);
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .winners-box h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .winners-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .winner-tag {
+            background-color: var(--bg-tertiary);
+            border: 1px solid rgba(48, 209, 88, 0.3);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .winner-tag .avatar {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 100;
+        }
+
+        .toast {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 280px;
+            max-width: 400px;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-icon {
+            display: inline-flex;
+            border-radius: 50%;
+            padding: 6px;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.success .toast-icon {
+            background-color: rgba(48, 209, 88, 0.1);
+            color: var(--success);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .toast.error .toast-icon {
+            background-color: rgba(255, 69, 58, 0.1);
+            color: var(--danger);
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <header>
+            <div class="logo">
+                <div>
+                    <h1>直播抽奖姬</h1>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">互动抽奖系统</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+
+            <!-- LEFT COLUMN: RULES AND CONFIG -->
+            <div class="col-left">
+
+                <!-- Status & Launch Control -->
+                <div class="card" style="padding: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <span style="font-size:0.9rem; color:var(--text-muted);">监听服务状态：</span>
+                            <div id="status-badge" class="status-badge stopped" style="margin-left: 5px;">
+                                <span class="status-dot"></span>
+                                <span id="status-text">未运行</span>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button id="start-btn" class="btn btn-success" onclick="startListener()">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                开启监听
+                            </button>
+                            <button id="stop-btn" class="btn btn-danger" onclick="stopListener()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                                </svg>
+                                停止监听
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manual Add Card -->
+                <div class="card">
+                    <div class="card-header" style="margin-bottom: 15px; padding-bottom: 10px;">
+                        <div class="card-title" style="font-size: 1.1rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            手动登记用户
+                        </div>
+                    </div>
+                    <form id="addEntryForm" onsubmit="addEntry(event)">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="manual-uname">输入用户姓名</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="manual-uname" placeholder="请输入用户姓名..." required
+                                    autocomplete="off" style="flex: 1;">
+                                <button type="submit" class="btn btn-primary" style="padding: 12px 24px;">
+                                    登记
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lottery Rules Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z">
+                                </path>
+                            </svg>
+                            过滤规则配置
+                        </div>
+                    </div>
+
+                    <form id="configForm" onsubmit="saveConfig(event)">
+                        <!-- Anchor Identity Code -->
+                        <div class="form-group">
+                            <label for="idCode">主播身份码</label>
+                            <input type="text" id="idCode" placeholder="请输入您的直播间身份码">
+                            <small
+                                style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:4px;">身份码是连接您直播间的唯一凭证，请务必填写正确。</small>
+                        </div>
+
+                        <!-- Entry Danmaku Settings -->
+                        <div class="form-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="dm_enabled" onchange="toggleDmFields(this.checked)">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">启用弹幕自动登记</span>
+                            </label>
+                        </div>
+
+                        <div id="dm-settings-fields"
+                            style="display:none; padding:15px; border-radius:12px; background-color:rgba(255,255,255,0.02); border:1px solid var(--border-color); margin-bottom: 20px;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label for="keyword">弹幕进入关键字</label>
+                                <input type="text" id="keyword" placeholder="例如：抽奖 (为空则不通过过滤匹配)">
+                                <small
+                                    style="color:var(--text-muted); font-size:0.75rem; display:block; margin-top:4px;">直播间观众发送包含此文本的弹幕即可计入名单</small>
+                            </div>
+                        </div>
+
+                        <!-- Entry Gift Settings -->
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="gift_enabled" onchange="toggleGiftFields(this.checked)">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">启用礼物自动登记</span>
+                            </label>
+                        </div>
+
+                        <div id="gift-settings-fields"
+                            style="display:none; padding:15px; border-radius:12px; background-color:rgba(255,255,255,0.02); border:1px solid var(--border-color); margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="gift_name">指定礼物名称</label>
+                                <input type="text" id="gift_name" placeholder="例如：情书 (留空则任意符合价格的礼物皆可)">
+                            </div>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <div class="form-group">
+                                    <label for="min_gift_num">最低礼物数量</label>
+                                    <input type="number" id="min_gift_num" min="1" value="1">
+                                </div>
+                                <div class="form-group">
+                                    <label for="min_price">最低礼物单价 (电池)</label>
+                                    <input type="number" id="min_price" min="0" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duplicate Entries Setting -->
+                        <div class="form-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="allow_multiple">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-label">允许单人多次获取条目 (增加中奖率)</span>
+                            </label>
+                            <small
+                                style="color:var(--text-muted); font-size:0.75rem; display:block; margin-left:30px;">开启后，观众发送多次有效指令/送出多个礼物会被登记为多张奖券，中奖概率成倍增加（但同一轮抽奖不可重复中奖）。</small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                <polyline points="7 3 7 8 15 8"></polyline>
+                            </svg>
+                            保存配置规则
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Connection Logs Terminal -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header" style="margin-bottom: 15px; padding-bottom: 10px;">
+                        <div class="card-title" style="font-size: 1.05rem;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="4 17 10 11 4 5"></polyline>
+                                <line x1="12" y1="19" x2="20" y2="19"></line>
+                            </svg>
+                            连接日志终端
+                        </div>
+                    </div>
+                    <div id="terminal-content" class="terminal-box">
+                        <div class="terminal-line" style="color:var(--text-muted)">等待服务启动...</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: LOTTERY DRAW BOARD & ENTRANTS LIST -->
+            <div class="col-right">
+
+                <!-- Active Draw Gimmick Machine -->
+                <div class="draw-board">
+                    <h3 style="font-size: 1.4rem; font-weight:600; letter-spacing: 0.5px;">超级无敌抽奖姬</h3>
+
+                    <div class="draw-gimmick" id="draw-scroller">
+                        --- 等待开奖 ---
+                    </div>
+
+                    <div
+                        style="display:flex; justify-content:center; align-items:center; gap: 15px; max-width: 400px; margin: 0 auto 10px auto;">
+                        <div style="flex:1;">
+                            <label style="text-align: left; font-size: 0.8rem; margin-bottom: 4px;">抽选人数</label>
+                            <input type="number" id="draw-count" min="1" value="1"
+                                style="padding: 10px; border-radius: 8px;">
+                        </div>
+                        <button class="btn btn-primary" style="align-self: flex-end; padding: 10px 30px; height: 44px;"
+                            onclick="performDraw()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            开！
+                        </button>
+                    </div>
+
+                    <!-- Winners cabinet -->
+                    <div class="winners-box" id="winners-box" style="display: none;">
+                        <h4>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                stroke-linecap="round" stroke-linejoin="round" style="width:18px; height:18px;">
+                                <polygon
+                                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2">
+                                </polygon>
+                            </svg>
+                            中奖名单
+                        </h4>
+                        <div class="winners-list" id="winners-list">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entrants List -->
+                <div class="card" style="margin-bottom: 0;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            参与用户登记表
+                            <span class="entrants-count" id="entrants-count">0 人</span>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary" onclick="exportEntries()"
+                                style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px;">
+                                导出 JSON
+                            </button>
+                            <button class="btn btn-danger" onclick="clearEntries()"
+                                style="padding: 6px 12px; font-size: 0.8rem; border-radius: 6px; background: rgba(255, 69, 58, 0.1); color: var(--danger); border: 1px solid rgba(255, 69, 58, 0.2);">
+                                清空登记
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="entrantSearch" placeholder="输入用户名搜索筛选登记名单..."
+                            oninput="filterEntrantsTable()"
+                            style="padding: 10px 14px; font-size: 0.85rem; border-radius: 8px;">
+                    </div>
+
+                    <div class="entries-table-wrapper">
+                        <table id="entries-table">
+                            <thead>
+                                <tr>
+                                    <th>参与用户</th>
+                                    <th>参与类型</th>
+                                    <th>发送内容</th>
+                                    <th>登记时间</th>
+                                    <th style="width: 50px; text-align: center;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="entries-body">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; color:var(--text-muted); padding:30px;">
+                                        目前没有用户被登记，请开启监听以搜集数据喵~
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script>
+        let isPolling = true;
+        let lastLogCount = 0;
+        let allEntries = [];
+        let isDrawing = false;
+
+        // Custom Toast system
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+
+            let icon = '';
+            if (type === 'success') {
+                icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            } else if (type === 'error') {
+                icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+            } else {
+                icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:16px; height:16px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+            }
+
+            toast.innerHTML = `
+                <div class="toast-icon">${icon}</div>
+                <div class="toast-message">${message}</div>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Toggle Danmaku Input fields based on Enable state
+        function toggleDmFields(enabled) {
+            const fields = document.getElementById('dm-settings-fields');
+            fields.style.display = enabled ? 'block' : 'none';
+        }
+
+        // Toggle Gift Input fields based on Enable state
+        function toggleGiftFields(enabled) {
+            const fields = document.getElementById('gift-settings-fields');
+            fields.style.display = enabled ? 'block' : 'none';
+        }
+
+        // Load Config
+        function loadConfig() {
+            fetch('/api/config?t=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('idCode').value = data.idCode || '';
+                    document.getElementById('dm_enabled').checked = data.dm_enabled || false;
+                    document.getElementById('keyword').value = data.keyword || '';
+                    document.getElementById('gift_enabled').checked = data.gift_enabled || false;
+                    document.getElementById('gift_name').value = data.gift_name || '';
+                    document.getElementById('min_gift_num').value = data.min_gift_num || 1;
+                    document.getElementById('min_price').value = data.min_price || 0;
+                    document.getElementById('allow_multiple').checked = data.allow_multiple || false;
+
+                    toggleDmFields(data.dm_enabled);
+                    toggleGiftFields(data.gift_enabled);
+                })
+                .catch(err => console.error("加载配置失败:", err));
+        }
+
+        // Save Config
+        function saveConfig(e) {
+            e.preventDefault();
+            const config = {
+                idCode: document.getElementById('idCode').value,
+                dm_enabled: document.getElementById('dm_enabled').checked,
+                keyword: document.getElementById('keyword').value,
+                gift_enabled: document.getElementById('gift_enabled').checked,
+                gift_name: document.getElementById('gift_name').value,
+                min_gift_num: parseInt(document.getElementById('min_gift_num').value) || 1,
+                min_price: parseInt(document.getElementById('min_price').value) || 0,
+                allow_multiple: document.getElementById('allow_multiple').checked
+            };
+
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(err => showToast("保存配置通信异常", 'error'));
+        }
+
+        // Listener control: Start
+        function startListener() {
+            document.getElementById('start-btn').disabled = true;
+            fetch('/api/start', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        pollStatus();
+                    } else {
+                        showToast(data.message, 'error');
+                        document.getElementById('start-btn').disabled = false;
+                    }
+                })
+                .catch(err => {
+                    showToast("服务启动连接失败", 'error');
+                    document.getElementById('start-btn').disabled = false;
+                });
+        }
+
+        // Listener control: Stop
+        function stopListener() {
+            document.getElementById('stop-btn').disabled = true;
+            fetch('/api/stop', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        pollStatus();
+                    } else {
+                        showToast(data.message, 'error');
+                        document.getElementById('stop-btn').disabled = false;
+                    }
+                })
+                .catch(err => {
+                    showToast("服务停止通信失败", 'error');
+                    document.getElementById('stop-btn').disabled = false;
+                });
+        }
+
+        // Poll Listener Status & update Badge
+        function pollStatus() {
+            fetch('/api/status?t=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    const badge = document.getElementById('status-badge');
+                    const text = document.getElementById('status-text');
+                    const startBtn = document.getElementById('start-btn');
+                    const stopBtn = document.getElementById('stop-btn');
+
+                    if (data.running) {
+                        badge.className = 'status-badge running';
+                        text.textContent = '运行中';
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                    } else {
+                        badge.className = 'status-badge stopped';
+                        text.textContent = '未运行';
+                        startBtn.disabled = false;
+                        stopBtn.disabled = true;
+                    }
+                })
+                .catch(err => console.error("状态轮询失败:", err));
+        }
+
+        // Poll and update real-time entries
+        function pollEntries() {
+            fetch('/api/entries?t=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    allEntries = data.entries || [];
+                    document.getElementById('entrants-count').textContent = `${allEntries.length} 人`;
+
+                    if (!isDrawing) {
+                        renderEntrantsTable(allEntries);
+                    }
+                })
+                .catch(err => console.error("获取登记名单失败:", err));
+        }
+
+        // Add user entry manually
+        function addEntry(e) {
+            e.preventDefault();
+            const unameInput = document.getElementById('manual-uname');
+            const uname = unameInput.value.trim();
+            if (!uname) return;
+
+            fetch('/api/entries/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uname: uname })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        unameInput.value = '';
+                        pollEntries();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(err => showToast("添加手动登记通信异常", 'error'));
+        }
+
+        // Delete specific entrant entry
+        function deleteEntry(open_id, timestamp) {
+            fetch('/api/entries/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ open_id: open_id, timestamp: timestamp })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        pollEntries();
+                    } else {
+                        showToast(data.message, 'error');
+                    }
+                })
+                .catch(err => showToast("删除登记记录通信异常", 'error'));
+        }
+
+        // Render Entrants table list
+        function renderEntrantsTable(entries) {
+            const tbody = document.getElementById('entries-body');
+            const searchVal = document.getElementById('entrantSearch').value.toLowerCase().trim();
+
+            // Filter entries locally based on search if any
+            let filtered = entries;
+            if (searchVal) {
+                filtered = entries.filter(e => e.uname.toLowerCase().includes(searchVal));
+            }
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align:center; color:var(--text-muted); padding:30px;">
+                            ${searchVal ? '未匹配到任何登记观众' : '目前没有观众被登记，请开启监听以搜集数据喵~'}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Render table lines
+            const displayEntries = [...filtered].reverse();
+            tbody.innerHTML = displayEntries.map(e => {
+                const dateStr = new Date(e.timestamp * 1000).toLocaleTimeString();
+                const typeBadge = e.type === 'danmaku'
+                    ? '<span class="badge-type badge-dm">弹幕</span>'
+                    : e.type === 'gift'
+                        ? '<span class="badge-type badge-gift">礼物</span>'
+                        : '<span class="badge-type badge-manual">手动</span>';
+
+                const faceUrl = e.uface || 'https://i0.hdslb.com/bfs/face/member/noface.jpg';
+
+                return `
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <img src="${faceUrl}" class="avatar" alt="face" referrerpolicy="no-referrer">
+                                <strong>${escapeHTML(e.uname)}</strong>
+                            </div>
+                        </td>
+                        <td>${typeBadge}</td>
+                        <td style="color:#d1d5db; font-family:'JetBrains Mono', monospace;">${escapeHTML(e.content)}</td>
+                        <td style="color:var(--text-muted); font-size:0.8rem;">${dateStr}</td>
+                        <td style="text-align: center;">
+                            <button class="delete-cell-btn" onclick="deleteEntry('${e.open_id}', ${e.timestamp})" title="删除">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterEntrantsTable() {
+            renderEntrantsTable(allEntries);
+        }
+
+        // Export Log entries
+        function exportEntries() {
+            if (allEntries.length === 0) {
+                showToast("无可用登记数据导出喵~", "error");
+                return;
+            }
+            const blob = new Blob([JSON.stringify(allEntries, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `lottery_entries_${new Date().toISOString().slice(0, 10)}.json`;
+            a.click();
+            showToast("成功导出登记数据", "success");
+        }
+
+        let clearConfirmTimeout = null;
+
+        // Clear registered database
+        function clearEntries() {
+            const btn = document.querySelector('button[onclick="clearEntries()"]');
+            if (!btn) return;
+
+            if (btn.dataset.confirming === "true") {
+                // Second click: perform the actual clear action
+                clearTimeout(clearConfirmTimeout);
+                resetClearButton(btn);
+
+                fetch('/api/entries/clear', { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            showToast(data.message, 'success');
+                            pollEntries();
+                        } else {
+                            showToast(data.message, 'error');
+                        }
+                    })
+                    .catch(err => showToast("清空名单异常", 'error'));
+            } else {
+                // First click: enter confirmation state
+                btn.dataset.confirming = "true";
+                btn.textContent = "再次点击确认";
+                btn.style.background = "var(--danger)";
+                btn.style.color = "white";
+                btn.style.borderColor = "var(--danger)";
+
+                clearConfirmTimeout = setTimeout(() => {
+                    resetClearButton(btn);
+                }, 3000);
+            }
+        }
+
+        function resetClearButton(btn) {
+            btn.dataset.confirming = "false";
+            btn.textContent = "清空登记";
+            btn.style.background = "rgba(255, 69, 58, 0.1)";
+            btn.style.color = "var(--danger)";
+            btn.style.borderColor = "rgba(255, 69, 58, 0.2)";
+        }
+
+        // Draw Lottery winners with sequence roll animation
+        function performDraw() {
+            if (isDrawing) return;
+            const countInput = document.getElementById('draw-count');
+            const count = parseInt(countInput.value) || 1;
+
+            if (allEntries.length === 0) {
+                showToast("当前登记名单为空，无法抽奖喵！", "error");
+                return;
+            }
+
+            isDrawing = true;
+            const scroller = document.getElementById('draw-scroller');
+
+            fetch('/api/draw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ count: count })
+            })
+                .then(res => res.json())
+                .then(async data => {
+                    if (!data.success) {
+                        showToast(data.message, 'error');
+                        isDrawing = false;
+                        return;
+                    }
+
+                    const winners = data.winners;
+                    const winnersListContainer = document.getElementById('winners-list');
+                    const winnersBox = document.getElementById('winners-box');
+
+                    // Show Winners Cabinet card
+                    winnersBox.style.display = 'block';
+                    winnersListContainer.innerHTML = '';
+
+                    // Roll suspense effect sequentially for each winner
+                    for (let i = 0; i < winners.length; i++) {
+                        const finalWinner = winners[i];
+
+                        // Rapid names scroll animation
+                        await new Promise(resolve => {
+                            let duration = 0;
+                            const interval = setInterval(() => {
+                                const tempUser = allEntries[Math.floor(Math.random() * allEntries.length)];
+                                scroller.textContent = tempUser.uname;
+                                duration += 60;
+                                if (duration > 1500) {
+                                    clearInterval(interval);
+                                    resolve();
+                                }
+                            }, 60);
+                        });
+
+                        // Stop and display current winner
+                        scroller.innerHTML = `<span class="draw-winner-name">${escapeHTML(finalWinner.uname)}</span>`;
+
+                        // Add winner tag with uface to winners list
+                        const faceUrl = finalWinner.uface || 'https://i0.hdslb.com/bfs/face/member/noface.jpg';
+                        const tag = document.createElement('div');
+                        tag.className = 'winner-tag';
+                        tag.innerHTML = `
+                        <img src="${faceUrl}" class="avatar" referrerpolicy="no-referrer">
+                        <span>${escapeHTML(finalWinner.uname)}</span>
+                        <small style="color:var(--text-muted); font-size:0.75rem;">(No. ${i + 1})</small>
+                    `;
+                        winnersListContainer.appendChild(tag);
+
+                        // Keep display state briefly before starting next winner spin
+                        if (i < winners.length - 1) {
+                            await new Promise(r => setTimeout(r, 1200));
+                        }
+                    }
+
+                    isDrawing = false;
+                    showToast("抽奖全部完成喵！", "success");
+                })
+                .catch(err => {
+                    console.error(err);
+                    showToast("与服务器通信抽选错误", "error");
+                    isDrawing = false;
+                });
+        }
+
+        // Poll real-time logs terminal
+        function pollLogs() {
+            fetch('/api/logs?t=' + Date.now())
+                .then(res => res.json())
+                .then(data => {
+                    const term = document.getElementById('terminal-content');
+                    if (data.logs.length > lastLogCount) {
+                        const newLines = data.logs.slice(lastLogCount);
+
+                        // Clear initial message if first logs arrived
+                        if (lastLogCount === 0) {
+                            term.innerHTML = '';
+                        }
+
+                        newLines.forEach(line => {
+                            const div = document.createElement('div');
+                            div.className = 'terminal-line';
+
+                            // Highlight participant additions
+                            let html = escapeHTML(line);
+                            if (line.includes('成功参与抽奖')) {
+                                html = `<span style="color:var(--success); font-weight:600;">${html}</span>`;
+                            } else if (line.includes('异常') || line.includes('失败')) {
+                                html = `<span style="color:var(--danger); font-weight:600;">${html}</span>`;
+                            } else if (line.includes('长连断开') || line.includes('停止指令')) {
+                                html = `<span style="color:var(--warning);">${html}</span>`;
+                            }
+                            div.innerHTML = html;
+                            term.appendChild(div);
+                        });
+
+                        lastLogCount = data.logs.length;
+                        term.scrollTop = term.scrollHeight;
+                    }
+                })
+                .catch(err => console.error("日志轮询异常:", err));
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        // Initialize state on page load
+        window.addEventListener('load', () => {
+            loadConfig();
+            pollStatus();
+            pollEntries();
+            pollLogs();
+
+            // Set up polling intervals
+            setInterval(pollStatus, 3000);
+            setInterval(pollEntries, 2000);
+            setInterval(pollLogs, 1500);
+        });
+    </script>
+</body>
+
+</html>

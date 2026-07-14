@@ -1,0 +1,10 @@
+{
+    "idCode": "DUHVEJ35JNR48",
+    "dm_enabled": false,
+    "keyword": "抽奖",
+    "gift_enabled": true,
+    "gift_name": "情书",
+    "min_gift_num": 1,
+    "min_price": 50,
+    "allow_multiple": true
+}
